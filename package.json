@@ -1,0 +1,23 @@
+{
+  "name": "node-redis-counter",
+  "version": "1.0.0",
+  "description": "App Node qui affiche IP/hostname et un compteur global sauvegardé dans Redis.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "jest --runInBand",
+    "lint": "node -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "redis": "^4.6.13"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

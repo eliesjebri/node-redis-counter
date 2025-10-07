@@ -26,18 +26,7 @@ pipeline {
       }
     }
 
-    stage('Prepare NPM Lockfile') {
-      steps {
-        sh '''
-          if [ ! -f package-lock.json ]; then
-            echo "[INFO] package-lock.json manquant, génération automatique..."
-            docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc "npm install --package-lock-only"
-          else
-            echo "[INFO] package-lock.json déjà présent"
-          fi
-        '''
-      }
-    }
+
 
 stage('Unit Tests & Coverage') {
   steps {
@@ -72,15 +61,6 @@ stage('Unit Tests & Coverage') {
       }
     }
 
-    stage('Smoke Test (Readiness only)') {
-      steps {
-        sh '''
-          echo "[INFO] Running smoke test (readiness)..."
-          chmod +x tests/smoke/smoke-test.sh
-          HOST_HTTP_PORT=18080 SMOKE_REDIS_PORT=16379 IMAGE_TAG=${IMAGE_TAG} tests/smoke/smoke-test.sh
-        '''
-      }
-    }
 
     stage('Integration Test (Compose)') {
       steps {

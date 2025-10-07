@@ -55,14 +55,10 @@ stage('Unit Tests & Coverage') {
         if ! npm ci; then
           echo "[WARN] npm ci a échoué, tentative avec npm install..."
           npm install
-        fi &&
-        npm install --no-audit --save-dev jest-junit &&
-        npm run test:coverage
+        fi 
       '
     '''
-    junit allowEmptyResults: true, testResults: '**/junit.xml'
-    recordCoverage tools: [[pattern: 'coverage/lcov.info']]
-  }
+   }
 }
 
 

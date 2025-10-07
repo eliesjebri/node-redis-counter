@@ -9,7 +9,7 @@
     "dev": "node --watch src/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "lint": "node -e \"process.exit(0)\"",
-    "test:coverage": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage --coverageReporters=text-summary --coverageReporters=lcov",
+    "test:coverage": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage --coverageReporters=text-summary --coverageReporters=lcov --coverageReporters=cobertura",
     "test:ci": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --ci --reporters=default --reporters=jest-junit"
   },
   "dependencies": {

@@ -61,8 +61,7 @@ stage('Unit Tests & Coverage') {
       '
     '''
     junit allowEmptyResults: true, testResults: '**/junit.xml'
-    publishCoverage adapters: [jacocoAdapter('coverage/lcov.info')],
-                     sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+    recordCoverage tools: [[parser: 'LCOV', pattern: 'coverage/lcov.info']]
   }
 }
 

@@ -14,6 +14,7 @@ pipeline {
   }
 
   environment {
+    NODE_IMAGE = 'node:20-alpine'
     IMAGE_NAME = 'node-redis-counter'
     IMAGE_TAG  = "${env.GIT_COMMIT ? env.GIT_COMMIT.take(7) : 'dev'}"
   }
@@ -25,28 +26,49 @@ pipeline {
       }
     }
 
-    stage('Unit Tests') {
+    stage('Prepare NPM Lockfile') {
       steps {
         sh '''
-          docker run --rm -v "$PWD":/app -w /app node:20-alpine sh -lc "
-            npm ci && npm test
+          if [ ! -f package-lock.json ]; then
+            echo "[INFO] package-lock.json manquant, génération automatique..."
+            docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc "npm install --package-lock-only"
+          else
+            echo "[INFO] package-lock.json déjà présent"
+          fi
+        '''
+      }
+    }
+
+    stage('Unit Tests & Coverage') {
+      steps {
+        sh '''
+          echo "[INFO] Running Jest unit tests with coverage..."
+          docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc "
+            npm ci &&
+            npm install --no-audit --save-dev jest-junit &&
+            npm run test:coverage
           "
         '''
+        junit allowEmptyResults: true, testResults: '**/junit.xml'
+        publishCoverage adapters: [jacocoAdapter('coverage/lcov.info')],
+                         sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
       }
     }
 
     stage('Build Image') {
       steps {
         sh '''
+          echo "[INFO] Building Docker image..."
           docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
           docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
         '''
       }
     }
 
-    stage('Smoke Test (readiness only)') {
+    stage('Smoke Test (Readiness only)') {
       steps {
         sh '''
+          echo "[INFO] Running smoke test (readiness)..."
           chmod +x tests/smoke/smoke-test.sh
           HOST_HTTP_PORT=18080 SMOKE_REDIS_PORT=16379 IMAGE_TAG=${IMAGE_TAG} tests/smoke/smoke-test.sh
         '''
@@ -56,6 +78,7 @@ pipeline {
     stage('Integration Test (Compose)') {
       steps {
         sh '''
+          echo "[INFO] Starting integration test environment..."
           chmod +x tests/integration/test.sh
           ./tests/integration/test.sh
         '''
@@ -69,6 +92,7 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: params.REGISTRY_CREDS_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
           sh '''
+            echo "[INFO] Pushing image to ${REGISTRY_URL}..."
             docker login -u "$REG_USER" -p "$REG_PASS" "${REGISTRY_URL}"
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY_URL}/${IMAGE_NAME}:${IMAGE_TAG}
             docker tag ${IMAGE_NAME}:latest ${REGISTRY_URL}/${IMAGE_NAME}:latest
@@ -82,12 +106,19 @@ pipeline {
 
   post {
     always {
+      echo "[CLEANUP] Nettoyage environnement CI..."
       sh '''
         docker stop nrc-smoke redis-smoke 2>/dev/null || true
         docker compose -f docker-compose.test.yml down -v || true
         docker system prune -af || true
       '''
       echo 'Pipeline terminé ✅'
+    }
+    success {
+      echo '[SUCCESS] Build et tests réussis 🎉'
+    }
+    failure {
+      echo '[FAILURE] Une erreur est survenue ❌'
     }
   }
 }

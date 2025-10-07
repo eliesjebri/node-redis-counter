@@ -1,15 +1,4 @@
 {
-  "type": "module",
-  "scripts": {
-    "start": "node src/server.js",
-    "test": "jest --runInBand"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
-  }
-}
-
-{
   "name": "node-redis-counter",
   "version": "1.0.0",
   "description": "App Node qui affiche IP/hostname et un compteur global sauvegardé dans Redis.",
@@ -18,8 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "jest --runInBand",
-    "lint": "node -e \"process.exit(0)\""
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "lint": "node -e \"process.exit(0)\"",
+    "test:coverage": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage --coverageReporters=text-summary --coverageReporters=lcov",
+    "test:ci": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --ci --reporters=default --reporters=jest-junit"
   },
   "dependencies": {
     "express": "^4.19.2",

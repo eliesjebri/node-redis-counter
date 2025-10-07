@@ -1,4 +1,8 @@
 export default {
   testEnvironment: "node",
-  roots: ["<rootDir>/tests/unit"]
+  transform: {}, // désactive Babel (inutile en Node 20)
+  roots: ["<rootDir>/tests/unit"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
 };

@@ -32,7 +32,7 @@ docker compose -f docker-compose.test.yml up -d
 # Déterminer IP du host accessible depuis Jenkins ou Docker DinD
 HOST_IP=$(hostname -I | awk '{print $1}')
 if [ -z "$HOST_IP" ]; then
-  HOST_IP="127.0.0.1"
+  HOST_IP=${HOST_IP:-host.docker.internal}
 fi
 
 echo "[IT] Attente du démarrage de l'application (max 90s)..."

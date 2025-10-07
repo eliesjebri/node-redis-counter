@@ -39,21 +39,33 @@ pipeline {
       }
     }
 
-    stage('Unit Tests & Coverage') {
-      steps {
-        sh '''
-          echo "[INFO] Running Jest unit tests with coverage..."
-          docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc "
-            npm ci &&
-            npm install --no-audit --save-dev jest-junit &&
-            npm run test:coverage
-          "
-        '''
-        junit allowEmptyResults: true, testResults: '**/junit.xml'
-        publishCoverage adapters: [jacocoAdapter('coverage/lcov.info')],
-                         sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
-      }
-    }
+stage('Unit Tests & Coverage') {
+  steps {
+    sh '''
+      echo "[INFO] Running Jest unit tests with coverage..."
+
+      # Vérification ou génération du package-lock.json
+      if [ ! -f package-lock.json ]; then
+        echo "[WARN] package-lock.json absent — génération via npm install..."
+        docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc "npm install --package-lock-only"
+      fi
+
+      # Exécution des tests avec fallback si npm ci échoue
+      docker run --rm -v "$PWD":/app -w /app ${NODE_IMAGE} sh -lc '
+        if ! npm ci; then
+          echo "[WARN] npm ci a échoué, tentative avec npm install..."
+          npm install
+        fi &&
+        npm install --no-audit --save-dev jest-junit &&
+        npm run test:coverage
+      '
+    '''
+    junit allowEmptyResults: true, testResults: '**/junit.xml'
+    publishCoverage adapters: [jacocoAdapter('coverage/lcov.info')],
+                     sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+  }
+}
+
 
     stage('Build Image') {
       steps {

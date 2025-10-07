@@ -1,12 +1,14 @@
 import express from "express";
 import { ensureRedis, redis } from "./redis.js";
 import { getHostInfo } from "./utils.js";
+import pkg from "../package.json" assert { type: "json" };
 
 const app = express();
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const COUNTER_KEY = process.env.COUNTER_KEY || "global:hits";
 const SERVICE_NAME = process.env.SERVICE_NAME || "node-redis-counter";
+const SERVICE_VERSION = process.env.SERVICE_VERSION || pkg.version;
 
 app.get("/healthz", async (_req, res) => {
   try {
@@ -36,6 +38,7 @@ app.get("/", async (req, res) => {
 
     res.json({
       service: SERVICE_NAME,
+      version: SERVICE_VERSION,
       container_ip: ip,
       container_hostname: hostname,
       request_ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
@@ -45,6 +48,9 @@ app.get("/", async (req, res) => {
     res.status(500).json({ error: String(e) });
   }
 });
+
+app.get("/version", (_req, res) => res.json({ service: SERVICE_NAME, version: SERVICE_VERSION }));
+
 
 const server = app.listen(PORT, async () => {
   const { hostname, ip } = getHostInfo();

@@ -117,15 +117,6 @@ stage('Unit Tests & Coverage') {
   }
 
   post {
-    always {
-      echo "[CLEANUP] Nettoyage environnement CI..."
-      sh '''
-        docker stop nrc-smoke redis-smoke 2>/dev/null || true
-        docker compose -f docker-compose.test.yml down -v || true
-        docker system prune -af || true
-      '''
-      echo 'Pipeline terminé ✅'
-    }
     success {
       echo '[SUCCESS] Build et tests réussis 🎉'
     }

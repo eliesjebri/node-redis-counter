@@ -7,8 +7,13 @@ docker build -t node-redis-counter:test .
 echo "[IT] Load .env variables..."
 # Charge les variables du fichier .env s’il existe
 if [ -f .env ]; then
-  # export des variables du .env (ignorer les lignes vides et commentaires)
-  export $(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | xargs) || true
+  echo "[IT] Loading environment variables from .env..."
+  while IFS='=' read -r key value; do
+    # Ignore les lignes vides ou commentées
+    if [ -n "$key" ] && [[ ! "$key" =~ ^# ]]; then
+      export "$key"="$value"
+    fi
+  done < .env
 fi
 
 # Valeurs par défaut si certaines variables ne sont pas dans .env

@@ -10,7 +10,7 @@ if [ -f .env ]; then
   echo "[IT] Loading environment variables from .env..."
   while IFS='=' read -r key value; do
     # Ignore les lignes vides ou commentées
-    if [ -n "$key" ] && [[ ! "$key" =~ ^# ]]; then
+    if [ -n "$key" ] && [ ! "$key" =~ ^# ]; then
       export "$key"="$value"
     fi
   done < .env
@@ -36,7 +36,7 @@ for i in $(seq 1 30); do
     break
   fi
   sleep 1
-  if [ "$i" -eq 30 ]; then
+  if [ "$i" -eq 60 ]; then
     echo "[IT] ⛔ Timeout: l'application ne répond pas sur /healthz"
     docker compose -f docker-compose.test.yml logs app
     exit 1

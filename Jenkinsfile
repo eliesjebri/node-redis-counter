@@ -61,7 +61,7 @@ stage('Unit Tests & Coverage') {
       '
     '''
     junit allowEmptyResults: true, testResults: '**/junit.xml'
-    recordCoverage tools: [[parser: 'LCOVERAGE', pattern: 'coverage/lcov.info']]
+    recordCoverage tool: [[pattern: 'coverage/lcov.info']]
   }
 }
 

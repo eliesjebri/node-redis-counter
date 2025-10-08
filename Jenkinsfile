@@ -39,15 +39,12 @@ stage('Unit Tests & Coverage') {
     junit allowEmptyResults: true, testResults: '**/junit.xml'
     
     recordCoverage(
-      tools: [[parser: 'LCOV', pattern: 'coverage/lcov.info']],
+      tools: [[parser: 'COBERTURA', pattern: 'coverage/cobertura-coverage.xml']],
       sourceCodeRetention: 'EVERY_BUILD',
-      qualityGates: [[threshold: 70.0, metric: 'LINE', type: 'DELTA']]
-    )
+      qualityGates: [[threshold: 70.0, metric: 'LINE']]
+)
   }
 }
-
-
-
 
 
     stage('Build Image') {

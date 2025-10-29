@@ -26,26 +26,25 @@ pipeline {
       }
     }
 
-stage('Unit Tests & Coverage') {
-  steps {
-    sh '''
-      echo "[INFO] Running Jest unit tests with coverage..."
-      docker run --rm -v "$PWD":/app -w /app node:20-alpine sh -lc "
-        npm ci &&
-        npm run test:coverage
-      "
-    '''
-    
-    junit allowEmptyResults: true, testResults: '**/junit.xml'
-    
-    recordCoverage(
-      tools: [[parser: 'COBERTURA', pattern: 'coverage/cobertura-coverage.xml']],
-      sourceCodeRetention: 'EVERY_BUILD',
-      qualityGates: [[threshold: 70.0, metric: 'LINE']]
-)
-  }
-}
+    stage('Unit Tests & Coverage') {
+      steps {
+        sh '''
+          echo "[INFO] Running Jest unit tests with coverage..."
+          docker run --rm -v "$PWD":/app -w /app node:20-alpine sh -lc "
+            npm ci &&
+            npm run test:coverage
+          "
+        '''
 
+        junit allowEmptyResults: true, testResults: '**/junit.xml'
+
+        recordCoverage(
+          tools: [[parser: 'COBERTURA', pattern: 'coverage/cobertura-coverage.xml']],
+          sourceCodeRetention: 'EVERY_BUILD',
+          qualityGates: [[threshold: 70.0, metric: 'LINE']]
+        )
+      }
+    }
 
     stage('Build Image') {
       steps {
@@ -56,7 +55,6 @@ stage('Unit Tests & Coverage') {
         '''
       }
     }
-
 
     stage('Integration Test (Compose)') {
       steps {
@@ -89,10 +87,10 @@ stage('Unit Tests & Coverage') {
 
   post {
     success {
-      echo '[SUCCESS] Build et tests réussis 🎉'
+      echo '[SUCCESS] Build et tests réussis'
     }
     failure {
-      echo '[FAILURE] Une erreur est survenue ❌'
+      echo '[FAILURE] Une erreur est survenue'
     }
   }
 }
